@@ -2,8 +2,15 @@ defmodule StockChatWeb.PageLive do
   use StockChatWeb, :live_view
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, assign(socket, query: "", results: %{})}
+  def mount(_params, session, socket) do
+    current_user_id = Map.get(session, "current_user_id")
+
+    user =
+      if current_user_id do
+        StockChat.Auth.get_user!(current_user_id)
+      end
+
+    {:ok, assign(socket, query: "", results: %{}, current_user: user)}
   end
 
   @impl true

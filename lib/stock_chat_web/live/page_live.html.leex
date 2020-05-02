@@ -1,17 +1,25 @@
-<section class="phx-hero">
-  <h1><%= gettext "Welcome to %{name}!", name: "Phoenix" %></h1>
-  <p>Peace-of-mind from prototype to production</p>
+<%= if assigns[:current_user] do %>
+  <%= @current_user.name %>
+  <a href="<%= Routes.auth_path(@socket, :logout) %>">Logout</a>
+  <hr/>
 
-  <form phx-change="suggest" phx-submit="search">
-    <input type="text" name="q" value="<%= @query %>" placeholder="Live dependency search" list="results" autocomplete="off"/>
-    <datalist id="results">
-      <%= for {app, _vsn} <- @results do %>
-        <option value="<%= app %>"><%= app %></option>
-      <% end %>
-    </datalist>
-    <button type="submit" phx-disable-with="Searching...">Go to Hexdocs</button>
-  </form>
-</section>
+  <section class="phx-hero">
+    <h1><%= gettext "Welcome to %{name}!", name: "Phoenix" %></h1>
+    <p>Peace-of-mind from prototype to production</p>
+
+    <form phx-change="suggest" phx-submit="search">
+      <input type="text" name="q" value="<%= @query %>" placeholder="Live dependency search" list="results" autocomplete="off"/>
+      <datalist id="results">
+        <%= for {app, _vsn} <- @results do %>
+          <option value="<%= app %>"><%= app %></option>
+        <% end %>
+      </datalist>
+      <button type="submit" phx-disable-with="Searching...">Go to Hexdocs</button>
+    </form>
+  </section>
+<% else %>
+  <a href="<%= Routes.auth_path(@socket, :request, "twitter") %>">Login</a>
+<% end %>
 
 <section class="row">
   <article class="column">

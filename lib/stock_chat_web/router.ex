@@ -20,6 +20,14 @@ defmodule StockChatWeb.Router do
     live "/", PageLive, :index
   end
 
+  scope "/auth", StockChatWeb do
+    pipe_through :browser
+
+    get "/logout", AuthController, :logout
+    get "/:provider", AuthController, :request
+    get "/:provider/callback", AuthController, :callback
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", StockChatWeb do
   #   pipe_through :api
