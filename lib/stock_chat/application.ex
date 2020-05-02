@@ -13,6 +13,8 @@ defmodule StockChat.Application do
       StockChatWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: StockChat.PubSub},
+      # supervisor to handle task which fetch stocks data from external service
+      Supervisor.child_spec({Task.Supervisor, name: StockChat.StockFetcherSupervisor}, []),
       # Start the Endpoint (http/https)
       StockChatWeb.Endpoint
       # Start a worker by calling: StockChat.Worker.start_link(arg)

@@ -25,8 +25,18 @@ defmodule StockChatWeb.PageLive do
        socket
        |> put_flash(:error, "blank message")}
     else
-      message = create_message(socket.assigns.current_user.id, message_text)
-      broadcast(message, socket.assigns.current_user)
+      capture = Regex.named_captures(~r/\/stock=(?<code>\w+)/, message_text)
+
+      unless is_nil(capture) do
+        Task.Supervisor.start_child(
+          StockChat.StockFetcherSupervisor,
+          __MODULE__,
+          :process_stock_request,
+          [Map.get(capture, "code")]
+        )
+      end
+
+      create_message(socket.assigns.current_user, message_text)
 
       {:noreply,
        socket
@@ -40,14 +50,51 @@ defmodule StockChatWeb.PageLive do
     {:noreply, update(socket, :messages, fn messages -> [message | messages] end)}
   end
 
-  defp create_message(user_id, content) do
+  def process_stock_request(code) do
+    text =
+      case StockChat.StockFetcher.get_share_data(code) do
+        {:ok, data} ->
+          %{
+            "High" => value,
+            "Symbol" => symbol
+          } = data
+
+          "#{symbol} quote $#{value} per share"
+
+        {:error, reason} ->
+          reason
+      end
+
+    bot = get_bot_user()
+    create_message(bot, text)
+  end
+
+  defp get_bot_user do
+    case Auth.get_user_by_username("bot") do
+      nil ->
+        attrs = %{
+          username: "bot",
+          name: "Bot",
+          image:
+            "https://cdn2.iconfinder.com/data/icons/botcons/100/android-bot-round-mag-ghost-virus-light-512.png"
+        }
+
+        {:ok, user} = Auth.create_user(attrs)
+        user
+
+      user ->
+        user
+    end
+  end
+
+  defp create_message(user, content) do
     {:ok, message} =
       Chat.create_message(%{
-        user_id: user_id,
+        user_id: user.id,
         content: content
       })
 
-    message
+    broadcast(message, user)
   end
 
   defp subscribe do
