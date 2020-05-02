@@ -3,18 +3,24 @@
   <a href="<%= Routes.auth_path(@socket, :logout) %>">Logout</a>
   <hr/>
 
-  <section class="phx-hero">
-    <h1><%= gettext "Welcome to %{name}!", name: "Phoenix" %></h1>
-    <p>Peace-of-mind from prototype to production</p>
-
-    <form phx-change="suggest" phx-submit="search">
-      <input type="text" name="q" value="<%= @query %>" placeholder="Live dependency search" list="results" autocomplete="off"/>
-      <datalist id="results">
-        <%= for {app, _vsn} <- @results do %>
-          <option value="<%= app %>"><%= app %></option>
-        <% end %>
-      </datalist>
-      <button type="submit" phx-disable-with="Searching...">Go to Hexdocs</button>
+  <section>
+    <%= for message <- @messages do %>
+      <div class="clearfix message-box">
+        <div class="float-left">
+          <p>
+            <%= message.content %>
+          </p>
+        </div>
+        <div class="float-right">
+          <small><%= message.user.username %></small>
+          <small><%= message.inserted_at %></small>
+        </div>
+      </div>
+    <% end %>
+    <hr/>
+    <form phx-submit="post_message">
+      <input type="text" name="message_text" value="<%= @message_text %>" placeholder="Enter your message" autofocus />
+      <button type="submit" phx-disable-with="Sending...">Send</button>
     </form>
   </section>
 <% else %>
